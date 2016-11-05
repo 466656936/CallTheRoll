@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CallTheRoll</string>
+    <drawable name="clr_normal">#FFFFFF</drawable>
+    <drawable name="clr_pressed">#BDBDBD</drawable>
+</resources>
