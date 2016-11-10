@@ -1,5 +1,6 @@
 package com.example.administrator.calltheroll;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -52,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     }
     void open(){
         String sql = "create table if not exists students(number integer PRIMARY KEY autoincrement,stu_number text unique,stu_name text not null,stu_class text not null,stu_job text default '未任职'," +
-                "shangke integer default 0,quanqin integer default 0,qingjia integer default 0,chidao integer default 0,zaotui default 0,kuangke default 0,photo_id integer)";
+                "shangke integer default 0,quanqin integer default 0,qingjia integer default 0,chidao integer default 0,zaotui default 0,kuangke default 0,photo_id integer default -1)";
         db.execSQL(sql.toString());
         sql="create table if not exists dianming(number integer PRIMARY KEY autoincrement,stu_number text,week integer,state text)";
         db.execSQL(sql.toString());
@@ -164,29 +165,36 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     void input_photo(){
-        Cursor get_lastId=db.rawQuery("select stu_number from students",null);
-        String id;String insert;String update;
+        Cursor get=db.rawQuery("select number,stu_number from students",null);
+        Context ctx=getBaseContext();
+        int photoId;
+        int id;
+        String stu_number;
+        String img_name;
+        String insert;String update;
         byte[] imagedata1;
         Bitmap bitmap1;
-        while (get_lastId.moveToNext()) {
-            id = get_lastId.getString(get_lastId.getColumnIndex("stu_number"));
-            update="update students set photo_id="+id.substring(id.length()-1,id.length())+" where stu_number='"+id+"'";
-            db.execSQL(update);
-        }
-        int photo[]={R.drawable.photo0,R.drawable.photo1,R.drawable.photo2,R.drawable.photo3,R.drawable.photo4,R.drawable.photo5
-                    ,R.drawable.photo6,R.drawable.photo7,R.drawable.photo8,R.drawable.photo9};
-        for(int i=0;i<10;i++) {
-            bitmap1 = BitmapFactory.decodeResource(getResources(), photo[i]);
+        ByteArrayOutputStream baos;
+        while (get.moveToNext()) {
+            id = get.getInt(get.getColumnIndex("number"));
+            stu_number=get.getString(get.getColumnIndex("stu_number"));
+            img_name="a"+stu_number;
+            photoId = getResources().getIdentifier(img_name, "drawable" , ctx.getPackageName());
+            if(photoId==0) photoId=R.drawable.error;
+            bitmap1 = BitmapFactory.decodeResource(getResources(), photoId);
             int size = bitmap1.getWidth() * bitmap1.getHeight() * 4;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(size);
+            baos = new ByteArrayOutputStream(size);
             //设置位图的压缩格式，质量为100%，并放入字节数组输出流中
             bitmap1.compress(Bitmap.CompressFormat.JPEG, 100, baos);
             //将字节数组输出流转化为字节数组byte[]
             imagedata1 = baos.toByteArray();
             insert = "insert into stu_photos(photo_id,photo) values(?,?)";
-            db.execSQL(insert, new Object[]{i,imagedata1});
+            db.execSQL(insert, new Object[]{id,imagedata1});
             //关闭字节数组输出流
             baos.reset();
+            bitmap1.recycle();
+            update="update students set photo_id="+id+" where stu_number='"+stu_number+"'";
+            db.execSQL(update);
         }
     }
 }

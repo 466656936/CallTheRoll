@@ -69,7 +69,7 @@
             <ImageButton
                 android:layout_width="100dp"
                 android:layout_height="133dp"
-                android:scaleType="centerInside"
+                android:scaleType="fitXY"
                 android:id="@+id/dian_photo" />
         </LinearLayout>
 
